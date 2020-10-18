@@ -1,0 +1,22 @@
+mongodb-url: "mongodb://127.0.0.1:27017/?connect=direct"
+db-name: "compare"
+all-sync-urls:
+  - "http://192.168.36.132:8051"
+  - "http://192.168.36.132:8052"
+  - "http://192.168.36.132:8053"
+start-time: 0
+time-range: 100
+wait-time: 30
+skip-time: 300
+cos:
+  schema: "https"
+  domain: "cos.ap-beijing.myqcloud.com"
+  bucket-name: "compare-1258989317"
+  secret-id: "xxx"
+  secret-key: "xxx"
+logger:
+  output: "file"
+  file-path: "./compare.log"
+  rotation-time: 24
+  max-age: 240
+  level: "Info"

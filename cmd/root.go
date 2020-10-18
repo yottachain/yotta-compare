@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -25,6 +26,16 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		config := new(ytcompare.Config)
+		if err := viper.Unmarshal(config); err != nil {
+			panic(fmt.Sprintf("unable to decode into config struct, %v\n", err))
+		}
+		initLog(config)
+		compare, err := ytcompare.New(context.Background(), config)
+		if err != nil {
+			panic(fmt.Sprintf("fatal error when starting compare service: %s\n", err))
+		}
+		compare.Start(context.Background())
 		// config := new(ytsync.Config)
 		// if err := viper.Unmarshal(config); err != nil {
 		// 	panic(fmt.Sprintf("unable to decode into config struct, %v\n", err))
@@ -155,10 +166,21 @@ var (
 	//DefaultSkipTime default value of SkipTime
 	DefaultSkipTime int = 300
 
+	//DefaultCOSSchema default value of COSSchema
+	DefaultCOSSchema string = "https"
+	//DefaultCOSDomain default value of COSDomain
+	DefaultCOSDomain string = "cos.ap-beijing.myqcloud.com"
+	//DefaultCOSBucketName default value of COSBucketName
+	DefaultCOSBucketName string = "compare"
+	//DefaultCOSSecretID default value of COSSecretID
+	DefaultCOSSecretID string = ""
+	//DefaultCOSSecretKey default value of COSSecretKey
+	DefaultCOSSecretKey string = ""
+
 	//DefaultLoggerOutput default value of LoggerOutput
 	DefaultLoggerOutput string = "stdout"
 	//DefaultLoggerFilePath default value of LoggerFilePath
-	DefaultLoggerFilePath string = "./sync.log"
+	DefaultLoggerFilePath string = "./compare.log"
 	//DefaultLoggerRotationTime default value of LoggerRotationTime
 	DefaultLoggerRotationTime int64 = 24
 	//DefaultLoggerMaxAge default value of LoggerMaxAge
@@ -183,6 +205,17 @@ func initFlag() {
 	viper.BindPFlag(ytcompare.WaitTimeField, rootCmd.PersistentFlags().Lookup(ytcompare.WaitTimeField))
 	rootCmd.PersistentFlags().Int(ytcompare.SkipTimeField, DefaultSkipTime, "ensure not to fetching shards till the end")
 	viper.BindPFlag(ytcompare.SkipTimeField, rootCmd.PersistentFlags().Lookup(ytcompare.SkipTimeField))
+	//COS config
+	rootCmd.PersistentFlags().String(ytcompare.COSSchemaField, DefaultCOSSchema, "schema of COS connection")
+	viper.BindPFlag(ytcompare.COSSchemaField, rootCmd.PersistentFlags().Lookup(ytcompare.COSSchemaField))
+	rootCmd.PersistentFlags().String(ytcompare.COSDomainField, DefaultCOSDomain, "domain name of COS")
+	viper.BindPFlag(ytcompare.COSDomainField, rootCmd.PersistentFlags().Lookup(ytcompare.COSDomainField))
+	rootCmd.PersistentFlags().String(ytcompare.COSBucketNameField, DefaultCOSBucketName, "bucket name of COS")
+	viper.BindPFlag(ytcompare.COSBucketNameField, rootCmd.PersistentFlags().Lookup(ytcompare.COSBucketNameField))
+	rootCmd.PersistentFlags().String(ytcompare.COSSecretIDField, DefaultCOSSecretID, "secret ID of COS")
+	viper.BindPFlag(ytcompare.COSSecretIDField, rootCmd.PersistentFlags().Lookup(ytcompare.COSSecretIDField))
+	rootCmd.PersistentFlags().String(ytcompare.COSSecretKeyField, DefaultCOSSecretKey, "secret key of COS")
+	viper.BindPFlag(ytcompare.COSSecretKeyField, rootCmd.PersistentFlags().Lookup(ytcompare.COSSecretKeyField))
 	//logger config
 	rootCmd.PersistentFlags().String(ytcompare.LoggerOutputField, DefaultLoggerOutput, "Output type of logger(stdout or file)")
 	viper.BindPFlag(ytcompare.LoggerOutputField, rootCmd.PersistentFlags().Lookup(ytcompare.LoggerOutputField))

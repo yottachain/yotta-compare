@@ -5,7 +5,6 @@ const (
 	MongoDBURLField = "mongodb-url"
 	//DBNameField field name of db-name
 	DBNameField = "db-name"
-
 	//AllSyncURLsField Field name of all-sync-urls
 	AllSyncURLsField = "all-sync-urls"
 	//StartTimeField Field name of start-time
@@ -16,6 +15,17 @@ const (
 	WaitTimeField = "wait-time"
 	//SkipTimeField Field name of skip-time
 	SkipTimeField = "skip-time"
+
+	//COSSchemaField Field name of cos.schema config
+	COSSchemaField = "cos.schema"
+	//COSDomainField Field name of cos.domain config
+	COSDomainField = "cos.domain"
+	//COSBucketNameField Field name of cos.bucket-name
+	COSBucketNameField = "cos.bucket-name"
+	//COSSecretIDField Field name of cos.secret-id config
+	COSSecretIDField = "cos.secret-id"
+	//COSSecretKeyField Field name of cos.secret-key config
+	COSSecretKeyField = "cos.secret-key"
 
 	//LoggerOutputField Field name of logger.output config
 	LoggerOutputField = "logger.output"
@@ -38,7 +48,17 @@ type Config struct {
 	TimeRange   int        `mapstructure:"time-range"`
 	WaitTime    int        `mapstructure:"wait-time"`
 	SkipTime    int        `mapstructure:"skip-time"`
+	COS         *COSConfig `mapstructure:"cos"`
 	Logger      *LogConfig `mapstructure:"logger"`
+}
+
+//COSConfig configuration of tencent COS
+type COSConfig struct {
+	Schema     string `mapstructure:"schema"`
+	Domain     string `mapstructure:"domain"`
+	BucketName string `mapstructure:"bucket-name"`
+	SecretID   string `mapstructure:"secret-id"`
+	SecretKey  string `mapstructure:"secret-key"`
 }
 
 //LogConfig system log configuration
