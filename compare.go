@@ -132,17 +132,22 @@ func (compare *Compare) Start(ctx context.Context) {
 			nid := id
 			go func() {
 				defer wg2.Done()
-				entry.Debugf("starting generating compare data of %d from %d to %d", nid, checkPoint.Start, checkPoint.Start+checkPoint.Range)
+				entry := log.WithFields(log.Fields{Function: "Start", MinerID: nid})
+				if len(store.Items[nid]) == 0 {
+					entry.Debugf("no compare data for uploading from %d to %d", checkPoint.Start, checkPoint.Start+checkPoint.Range)
+					return
+				}
+				entry.Debugf("starting generating compare data from %d to %d", checkPoint.Start, checkPoint.Start+checkPoint.Range)
 				data, err := store.GenerateData(nid)
 				if err != nil {
 					innerErr = &err
-					entry.WithError(err).Errorf("generating compare data of node %d from %d to %d", nid, checkPoint.Start, checkPoint.Start+checkPoint.Range)
+					entry.WithError(err).Errorf("generating compare data from %d to %d", checkPoint.Start, checkPoint.Start+checkPoint.Range)
 					return
 				}
 				err = compare.UploadData(ctx, nid, data, checkPoint.Start, checkPoint.Range)
 				if err != nil {
 					innerErr = &err
-					entry.WithError(err).Errorf("uploading compare data of node %d from %d to %d", nid, checkPoint.Start, checkPoint.Start+checkPoint.Range)
+					entry.WithError(err).Errorf("uploading compare data from %d to %d", checkPoint.Start, checkPoint.Start+checkPoint.Range)
 					return
 				}
 			}()
@@ -200,7 +205,7 @@ func (compare *Compare) UploadData(ctx context.Context, nodeID int32, data bytes
 		cursor.FileFrom = start
 		cursor.Timestamp = time.Now().Unix()
 	}
-	_, err = compare.cosCli.Object.Put(ctx, fmt.Sprintf("%d_%d", nodeID, cursor.From), bytes.NewReader(data.Bytes()), nil)
+	_, err = compare.cosCli.Object.Put(ctx, fmt.Sprintf("%d_%d", nodeID, cursor.FileFrom), bytes.NewReader(data.Bytes()), nil)
 	if err != nil {
 		entry.WithError(err).Errorf("uploading data to COS from %d, range %d", cursor.From, cursor.Range)
 		return err
@@ -211,7 +216,7 @@ func (compare *Compare) UploadData(ctx context.Context, nodeID int32, data bytes
 			TagSet: []cos.ObjectTaggingTag{
 				{
 					Key:   "next",
-					Value: fmt.Sprintf("%d_%d", nodeID, cursor.From),
+					Value: fmt.Sprintf("%d_%d", nodeID, cursor.FileFrom),
 				},
 				{
 					Key:   "range",
@@ -219,7 +224,7 @@ func (compare *Compare) UploadData(ctx context.Context, nodeID int32, data bytes
 				},
 			},
 		}
-		_, err := compare.cosCli.Object.PutTagging(ctx, fmt.Sprintf("%d_%d", nodeID, cursorOld.From), opt)
+		_, err := compare.cosCli.Object.PutTagging(ctx, fmt.Sprintf("%d_%d", nodeID, cursorOld.FileFrom), opt)
 		if err != nil {
 			entry.WithError(err).Errorf("tagging data of %s failed", fmt.Sprintf("%d_%d", nodeID, cursorOld.From))
 			return err

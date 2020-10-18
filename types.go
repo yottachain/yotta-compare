@@ -7,15 +7,13 @@ const (
 	SNID = "snID"
 	//MinerID tag
 	MinerID = "minerID"
-	//BlockID tag
-	BlockID = "blockID"
 	//ShardID tag
 	ShardID = "shardID"
 )
 
 const (
-	//CheckPointTab CheckPoint table
-	CheckPointTab = "CheckPoint"
+	//CheckPointTab checkpoint table
+	CheckPointTab = "checkpoint"
 	//CursorTab cursor table
 	CursorTab = "cursor"
 )

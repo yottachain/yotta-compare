@@ -23,9 +23,8 @@ func NewStore() *Store {
 
 //Add add a new shard
 func (store *Store) Add(nodeID int32, shard []byte) {
-	lock := store.locks[int(nodeID)%len(store.locks)]
-	lock.Lock()
-	defer lock.Unlock()
+	store.locks[int(nodeID)%len(store.locks)].Lock()
+	defer store.locks[int(nodeID)%len(store.locks)].Unlock()
 	store.Items[nodeID] = append(store.Items[nodeID], shard)
 }
 
